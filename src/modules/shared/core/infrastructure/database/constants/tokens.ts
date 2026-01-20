@@ -1,0 +1,5 @@
+export const SHARED_DI_TOKENS = {
+    DATABASE_CONFIG: Symbol('DATABASE_CONFIG'),
+    DATABASE_CLIENT: Symbol('DATABASE_CLIENT'),
+    UNIT_OF_WORK: Symbol('UNIT_OF_WORK'),
+} as const;

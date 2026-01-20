@@ -1,0 +1,4 @@
+export const TOBACCO_DI_TOKENS = {
+    TOBACCO_REPOSITORY: Symbol('TOBACCO_REPOSITORY'),
+    TOBACCO_SERVICE: Symbol('TOBACCO_SERVICE'),
+} as const;

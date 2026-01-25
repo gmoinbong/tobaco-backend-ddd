@@ -1,3 +1,5 @@
+//TODO: Create fabric or facade
+//Create transactions and reupload to service
 import { ExperinceLevel } from "../../domain/value-objects/experience-level.vo";
 import { NicotineContent } from "../../domain/value-objects/nicotine-content.vo";
 import { ThroatHit } from "../../domain/value-objects/throat-hit.vo";

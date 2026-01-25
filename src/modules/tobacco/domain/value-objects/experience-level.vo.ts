@@ -1,3 +1,4 @@
+//TODO: create additional base class for validation!
 import { ValidationError } from "@shared/core/domain";
 
 export class ExperinceLevel {

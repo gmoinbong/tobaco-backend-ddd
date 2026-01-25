@@ -1,3 +1,4 @@
+//Remove repository logic to repository from controller 
 import { Body, Controller, Delete, Get, Param, Post, Put } from "@nestjs/common";
 import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiBody } from "@nestjs/swagger";
 import { CreateTobaccoUseCase } from "../../application/use-cases/create-tobacco.use.case";

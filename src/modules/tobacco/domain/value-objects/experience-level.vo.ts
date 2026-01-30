@@ -1,26 +1,12 @@
-//TODO: create additional base class for validation!
-import { ValidationError } from "@shared/core/domain";
+import { NumericValueObject } from "@shared/core/domain/value-objects/numeric-value-object.base";
 
-export class ExperinceLevel {
-    private constructor(private readonly value: number) { }
-
-    static create(value: number): ExperinceLevel {
-        if (!Number.isInteger(value)) {
-            throw new ValidationError('Experience level must be an integer');
-        }
-
-        if (value < 0 || value > 100) {
-            throw new ValidationError('Experience level must be between 0 and 100');
-        }
-
-        return new ExperinceLevel(value);
+export class ExperienceLevel extends NumericValueObject {
+    private constructor(value: number) {
+        super(value);
     }
 
-    getValue(): number {
-        return this.value;
-    }
-
-    equals(other: ExperinceLevel): boolean {
-        return this.value === other.value;
+    static create(value: number): ExperienceLevel {
+        NumericValueObject.validateRange(value, 0, 100, 'Experience level');
+        return new ExperienceLevel(value);
     }
 }

@@ -1,25 +1,12 @@
-import { ValidationError } from "@shared/core/domain";
+import { NumericValueObject } from "@shared/core/domain/value-objects/numeric-value-object.base";
 
-export class NicotineContent {
-    private constructor(private readonly value: number) { }
+export class NicotineContent extends NumericValueObject {
+    private constructor(value: number) {
+        super(value);
+    }
 
     static create(value: number): NicotineContent {
-        if (!Number.isInteger(value)) {
-            throw new ValidationError('Nicotine content must be an integer');
-        }
-
-        if (value < 0 || value > 100) {
-            throw new ValidationError('Nicotine content must be between 0 and 100');
-        }
-
+        NumericValueObject.validateRange(value, 0, 100, 'Nicotine content');
         return new NicotineContent(value);
-    }
-
-    getValue(): number {
-        return this.value
-    }
-
-    equals(other: NicotineContent): boolean {
-        return this.value === other.value
     }
 }

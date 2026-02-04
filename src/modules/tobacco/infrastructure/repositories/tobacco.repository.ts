@@ -6,7 +6,7 @@ import { tobaccoTable } from "@shared/core/infrastructure/database/schema";
 import { eq } from "drizzle-orm";
 import { NicotineContent } from "../../domain/value-objects/nicotine-content.vo";
 import { ThroatHit } from "../../domain/value-objects/throat-hit.vo";
-import { ExperinceLevel } from "../../domain/value-objects/experience-level.vo";
+import { ExperienceLevel } from "../../domain/value-objects/experience-level.vo";
 import { SHARED_DI_TOKENS } from "@shared/core/infrastructure/database/constants/tokens";
 
 export class TobaccoRepository implements ITobaccoRepository {
@@ -41,7 +41,7 @@ export class TobaccoRepository implements ITobaccoRepository {
             description: row.description,
             nicotineContent: NicotineContent.create(row.nicotine_content),
             throatHit: ThroatHit.create(row.throat_hit),
-            requiredExperience: ExperinceLevel.create(row.required_experience),
+            requiredExperience: ExperienceLevel.create(row.required_experience),
             createdAt: row.created_at,
             updatedAt: row.updated_at,
         });
@@ -67,7 +67,7 @@ export class TobaccoRepository implements ITobaccoRepository {
                 description: inserted.description,
                 nicotineContent: NicotineContent.create(inserted.nicotine_content),
                 throatHit: ThroatHit.create(inserted.throat_hit),
-                requiredExperience: ExperinceLevel.create(inserted.required_experience),
+                requiredExperience: ExperienceLevel.create(inserted.required_experience),
                 createdAt: inserted.created_at,
                 updatedAt: inserted.updated_at,
             }
@@ -98,7 +98,7 @@ export class TobaccoRepository implements ITobaccoRepository {
             description: row.description,
             nicotineContent: NicotineContent.create(row.nicotine_content),
             throatHit: ThroatHit.create(row.throat_hit),
-            requiredExperience: ExperinceLevel.create(row.required_experience),
+            requiredExperience: ExperienceLevel.create(row.required_experience),
             createdAt: row.created_at,
             updatedAt: row.updated_at,
         }));
@@ -122,7 +122,7 @@ export class TobaccoRepository implements ITobaccoRepository {
             description: updated.description,
             nicotineContent: NicotineContent.create(updated.nicotine_content),
             throatHit: ThroatHit.create(updated.throat_hit),
-            requiredExperience: ExperinceLevel.create(updated.required_experience),
+            requiredExperience: ExperienceLevel.create(updated.required_experience),
             createdAt: updated.created_at,
             updatedAt: updated.updated_at,
         });

@@ -1,6 +1,6 @@
+import { ExperienceLevel } from "../value-objects/experience-level.vo";
 import { NicotineContent } from "../value-objects/nicotine-content.vo";
 import { ThroatHit } from "../value-objects/throat-hit.vo";
-import { ExperinceLevel } from "../value-objects/experience-level.vo";
 
 export interface TobaccoProps {
     id: string;
@@ -9,7 +9,7 @@ export interface TobaccoProps {
     description: string;
     nicotineContent: NicotineContent;
     throatHit: ThroatHit;
-    requiredExperience: ExperinceLevel;
+    requiredExperience: ExperienceLevel;
     createdAt: Date;
     updatedAt: Date;
 }
@@ -22,7 +22,7 @@ export class Tobacco {
         public readonly description: string,
         public readonly nicotineContent: NicotineContent,
         public readonly throatHit: ThroatHit,
-        public readonly requiredExperience: ExperinceLevel,
+        public readonly requiredExperience: ExperienceLevel,
         public readonly createdAt: Date,
         public readonly updatedAt: Date,
     ) { }
@@ -41,5 +41,15 @@ export class Tobacco {
         );
     }
 
+    getStrength(tobacco: Tobacco): number {
+        return tobacco.nicotineContent.getValue() * 0.6 + tobacco.throatHit.getValue() * 0.4
+    }
 
+    compareStrength(tobacco: Tobacco): number {
+        return this.getStrength(this) - this.getStrength(tobacco)
+    }
+
+    isSuitableFor(exprinceLevel: ExperienceLevel): boolean {
+        return this.getStrength(this) > exprinceLevel.getValue() + 40
+    }
 }

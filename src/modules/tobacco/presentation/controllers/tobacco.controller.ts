@@ -9,7 +9,7 @@ import { UpdateTobaccoUseCase } from "../../application/use-cases/update-tobacco
 import { Tobacco } from "../../domain/entities/tobacco.entity";
 import { NicotineContent } from "../../domain/value-objects/nicotine-content.vo";
 import { ThroatHit } from "../../domain/value-objects/throat-hit.vo";
-import { ExperinceLevel } from "../../domain/value-objects/experience-level.vo";
+import { ExperienceLevel } from "../../domain/value-objects/experience-level.vo";
 import { v4 as uuidv4 } from 'uuid';
 import { CreateTobaccoDto, UpdateTobaccoDto, TobaccoResponseDto } from "../dto";
 
@@ -37,7 +37,7 @@ export class TobaccoController {
             description: dto.description,
             nicotineContent: NicotineContent.create(dto.nicotineContent),
             throatHit: ThroatHit.create(dto.throatHit),
-            requiredExperience: ExperinceLevel.create(dto.requiredExperience),
+            requiredExperience: ExperienceLevel.create(dto.requiredExperience),
             createdAt: new Date(),
             updatedAt: new Date(),
         })
@@ -87,7 +87,7 @@ export class TobaccoController {
                 description: dto.description,
                 nicotineContent: NicotineContent.create(dto.nicotineContent),
                 throatHit: ThroatHit.create(dto.throatHit),
-                requiredExperience: ExperinceLevel.create(dto.requiredExperience),
+                requiredExperience: ExperienceLevel.create(dto.requiredExperience),
                 createdAt: new Date(),
                 updatedAt: new Date(),
             }),

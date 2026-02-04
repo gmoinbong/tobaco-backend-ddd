@@ -1,4 +1,4 @@
-import { ExperinceLevel } from "../value-objects/experience-level.vo";
+import { ExperienceLevel } from "../value-objects/experience-level.vo";
 import { NicotineContent } from "../value-objects/nicotine-content.vo";
 import { ThroatHit } from "../value-objects/throat-hit.vo";
 
@@ -14,7 +14,7 @@ export class TobaccoStrengthEvaluator {
         {
             nicotine: NicotineContent,
             throatHit: ThroatHit,
-            userExperience: ExperinceLevel
+            userExperience: ExperienceLevel
         }): TobaccoSuitability {
 
         const experince = params.userExperience.getValue()

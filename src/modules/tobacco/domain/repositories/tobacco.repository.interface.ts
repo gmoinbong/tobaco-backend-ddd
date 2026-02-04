@@ -15,9 +15,9 @@ export interface ITobaccoRepository {
 
     findSuitableFor(
         experienceLevel: ExperienceLevel,
-        limit: number,
-        offset: number,
+        pageSize: number,
+        page: number,
     ): Promise<Tobacco[]>;
 
-    
+
 }

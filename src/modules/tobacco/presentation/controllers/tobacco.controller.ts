@@ -1,5 +1,5 @@
 //Remove repository logic to repository from controller 
-import { Body, Controller, Delete, Get, Param, Post, Put } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Put } from "@nestjs/common";
 import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiBody } from "@nestjs/swagger";
 import { CreateTobaccoUseCase } from "../../application/use-cases/create-tobacco.use.case";
 import { DeleteTobaccoUseCase } from "../../application/use-cases/delete.tobacco.use.case";
@@ -11,6 +11,7 @@ import { NicotineContent } from "../../domain/value-objects/nicotine-content.vo"
 import { ThroatHit } from "../../domain/value-objects/throat-hit.vo";
 import { ExperienceLevel } from "../../domain/value-objects/experience-level.vo";
 import { CreateTobaccoDto, UpdateTobaccoDto, TobaccoResponseDto } from "../dto";
+import { FindSuitableForUseCase } from "../../application/use-cases/find-suitable-for.use.case";
 
 @ApiTags('Tobacco')
 @Controller('tobacco')
@@ -20,7 +21,8 @@ export class TobaccoController {
         private readonly getTobaccoByIdUseCase: GetTobaccoByIdUseCase,
         private readonly getAllTobaccoUseCase: GetAllTobaccoUseCase,
         private readonly updateTobaccoUseCase: UpdateTobaccoUseCase,
-        private readonly deleteTobaccoUseCase: DeleteTobaccoUseCase
+        private readonly deleteTobaccoUseCase: DeleteTobaccoUseCase,
+        private readonly getTobaccoSuitableForUseCase: FindSuitableForUseCase,
     ) { }
 
     @Post('create')
@@ -96,6 +98,18 @@ export class TobaccoController {
     async deleteTobacco(@Param('id') id: string) {
         return await this.deleteTobaccoUseCase.execute({
             id,
+        })
+    }
+
+    @Get('suitable-for/:experienceLevel')
+    @ApiOperation({ summary: 'Get tobacco products suitable for a given experience level', description: 'Retrieves a list of tobacco products that are suitable for a given experience level' })
+    @ApiParam({ name: 'experienceLevel', description: 'Experience level', example: 1, type: Number, })
+    @ApiResponse({ status: 200, description: 'List of tobacco products suitable for the given experience level', type: [TobaccoResponseDto] })
+    async getTobaccoSuitableFor(@Param('experienceLevel', ParseIntPipe) experienceLevel: number) {
+        return await this.getTobaccoSuitableForUseCase.execute({
+            experienceLevel,
+            pageSize: 10,
+            page: 1,
         })
     }
 }

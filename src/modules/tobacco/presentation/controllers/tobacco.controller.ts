@@ -10,7 +10,6 @@ import { Tobacco } from "../../domain/entities/tobacco.entity";
 import { NicotineContent } from "../../domain/value-objects/nicotine-content.vo";
 import { ThroatHit } from "../../domain/value-objects/throat-hit.vo";
 import { ExperienceLevel } from "../../domain/value-objects/experience-level.vo";
-import { v4 as uuidv4 } from 'uuid';
 import { CreateTobaccoDto, UpdateTobaccoDto, TobaccoResponseDto } from "../dto";
 
 @ApiTags('Tobacco')
@@ -31,15 +30,12 @@ export class TobaccoController {
     @ApiResponse({ status: 400, description: 'Invalid input data' })
     async createTobacco(@Body() dto: CreateTobaccoDto) {
         const tobacco = Tobacco.create({
-            id: uuidv4(),
             brand: dto.brand,
             model: dto.model,
             description: dto.description,
             nicotineContent: NicotineContent.create(dto.nicotineContent),
             throatHit: ThroatHit.create(dto.throatHit),
             requiredExperience: ExperienceLevel.create(dto.requiredExperience),
-            createdAt: new Date(),
-            updatedAt: new Date(),
         })
 
         const result = await this.createTobaccoUseCase.execute({
@@ -81,15 +77,12 @@ export class TobaccoController {
         const tobacco = await this.updateTobaccoUseCase.execute({
             id,
             tobacco: Tobacco.create({
-                id,
                 brand: dto.brand,
                 model: dto.model,
                 description: dto.description,
                 nicotineContent: NicotineContent.create(dto.nicotineContent),
                 throatHit: ThroatHit.create(dto.throatHit),
                 requiredExperience: ExperienceLevel.create(dto.requiredExperience),
-                createdAt: new Date(),
-                updatedAt: new Date(),
             }),
         });
         return tobacco;

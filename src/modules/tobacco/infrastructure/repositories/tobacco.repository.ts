@@ -3,11 +3,12 @@ import type { Database } from "@shared/core/infrastructure/database/database.typ
 import { ITobaccoRepository } from "../../domain/repositories/tobacco.repository.interface";
 import { Tobacco } from "../../domain/entities/tobacco.entity";
 import { tobaccoTable } from "@shared/core/infrastructure/database/schema";
-import { eq } from "drizzle-orm";
+import { desc, eq, lte } from "drizzle-orm";
 import { NicotineContent } from "../../domain/value-objects/nicotine-content.vo";
 import { ThroatHit } from "../../domain/value-objects/throat-hit.vo";
 import { ExperienceLevel } from "../../domain/value-objects/experience-level.vo";
 import { SHARED_DI_TOKENS } from "@shared/core/infrastructure/database/constants/tokens";
+import { InternalServerError, NotFoundError } from '@shared/core/domain';
 
 export class TobaccoRepository implements ITobaccoRepository {
     constructor(
@@ -15,26 +16,8 @@ export class TobaccoRepository implements ITobaccoRepository {
         private readonly db: Database
     ) { }
 
-    async findById(id: string): Promise<Tobacco | null> {
-        const result = await this.db.select({
-            id: tobaccoTable.id,
-            brand: tobaccoTable.brand,
-            model: tobaccoTable.model,
-            description: tobaccoTable.description,
-            nicotine_content: tobaccoTable.nicotine_content,
-            throat_hit: tobaccoTable.throat_hit,
-            required_experience: tobaccoTable.required_experience,
-            created_at: tobaccoTable.created_at,
-            updated_at: tobaccoTable.updated_at,
-        }).from(tobaccoTable).where(eq(tobaccoTable.id, id))
-            .limit(1);
-
-        if (result.length === 0) {
-            return null;
-        }
-
-        const row = result[0];
-        return Tobacco.create({
+    private mapRowToTobacco(row: any): Tobacco {
+        return Tobacco.reconstitute({
             id: row.id,
             brand: row.brand,
             model: row.model,
@@ -47,31 +30,56 @@ export class TobaccoRepository implements ITobaccoRepository {
         });
     }
 
-    async create(tobacco: Tobacco): Promise<Tobacco> {
-        const [inserted] = await this.db.insert(tobaccoTable).values({
-            brand: tobacco.brand,
-            model: tobacco.model,
-            description: tobacco.description,
-            nicotine_content: tobacco.nicotineContent.getValue(),
-            throat_hit: tobacco.throatHit.getValue(),
-            required_experience: tobacco.requiredExperience.getValue(),
-            created_at: tobacco.createdAt,
-            updated_at: tobacco.updatedAt,
-        }).returning();
+    async findById(id: string): Promise<Tobacco | null> {
+        const result = await this.db.select()
+            .from(tobaccoTable).where(eq(tobaccoTable.id, id))
+            .limit(1);
 
-        return Tobacco.create(
-            {
-                id: inserted.id,
-                brand: inserted.brand,
-                model: inserted.model,
-                description: inserted.description,
-                nicotineContent: NicotineContent.create(inserted.nicotine_content),
-                throatHit: ThroatHit.create(inserted.throat_hit),
-                requiredExperience: ExperienceLevel.create(inserted.required_experience),
-                createdAt: inserted.created_at,
-                updatedAt: inserted.updated_at,
-            }
-        );
+        if (result.length === 0) {
+            return null
+        }
+
+        const row = result[0];
+        return this.mapRowToTobacco(row);
+    }
+
+    async create(tobacco: Tobacco): Promise<Tobacco> {
+        const [inserted] = await this.db
+            .insert(tobaccoTable)
+            .values({
+                brand: tobacco._brand,
+                model: tobacco._model,
+                description: tobacco._description,
+                nicotine_content: tobacco._nicotineContent.getValue(),
+                throat_hit: tobacco._throatHit.getValue(),
+                required_experience: tobacco._requiredExperience.getValue(),
+                created_at: tobacco._createdAt,
+                updated_at: tobacco._updatedAt,
+            }).returning();
+
+        if (!inserted) {
+            throw new InternalServerError('Failed to create tobacco');
+        }
+
+        return this.mapRowToTobacco(inserted[0]);
+    }
+
+    async update(id: string, tobacco: Tobacco): Promise<Tobacco> {
+        const [updated] = await this.db.update(tobaccoTable).set({
+            brand: tobacco._brand,
+            model: tobacco._model,
+            description: tobacco._description,
+            nicotine_content: tobacco._nicotineContent.getValue(),
+            throat_hit: tobacco._throatHit.getValue(),
+            required_experience: tobacco._requiredExperience.getValue(),
+            updated_at: tobacco._updatedAt,
+        }).where(eq(tobaccoTable.id, id)).returning();
+
+        if (!updated) {
+            throw new NotFoundError('Tobacco not found');
+        }
+
+        return this.mapRowToTobacco(updated[0]);
     }
 
     async delete(id: string): Promise<void> {
@@ -79,52 +87,24 @@ export class TobaccoRepository implements ITobaccoRepository {
     }
 
     async findAll(limit: number, offset: number): Promise<Tobacco[]> {
-        const result = await this.db.select({
-            id: tobaccoTable.id,
-            brand: tobaccoTable.brand,
-            model: tobaccoTable.model,
-            description: tobaccoTable.description,
-            nicotine_content: tobaccoTable.nicotine_content,
-            throat_hit: tobaccoTable.throat_hit,
-            required_experience: tobaccoTable.required_experience,
-            created_at: tobaccoTable.created_at,
-            updated_at: tobaccoTable.updated_at,
-        }).from(tobaccoTable).limit(limit).offset(offset);
+        const result = await this.db.select()
+            .from(tobaccoTable)
+            .limit(limit)
+            .offset(offset);
 
-        return result.map((row) => Tobacco.create({
-            id: row.id,
-            brand: row.brand,
-            model: row.model,
-            description: row.description,
-            nicotineContent: NicotineContent.create(row.nicotine_content),
-            throatHit: ThroatHit.create(row.throat_hit),
-            requiredExperience: ExperienceLevel.create(row.required_experience),
-            createdAt: row.created_at,
-            updatedAt: row.updated_at,
-        }));
+        return result.map((row) => this.mapRowToTobacco(row));
     }
 
-    async update(id: string, tobacco: Tobacco): Promise<Tobacco> {
-        const [updated] = await this.db.update(tobaccoTable).set({
-            brand: tobacco.brand,
-            model: tobacco.model,
-            description: tobacco.description,
-            nicotine_content: tobacco.nicotineContent.getValue(),
-            throat_hit: tobacco.throatHit.getValue(),
-            required_experience: tobacco.requiredExperience.getValue(),
-            updated_at: tobacco.updatedAt,
-        }).where(eq(tobaccoTable.id, id)).returning();
 
-        return Tobacco.create({
-            id: updated.id,
-            brand: updated.brand,
-            model: updated.model,
-            description: updated.description,
-            nicotineContent: NicotineContent.create(updated.nicotine_content),
-            throatHit: ThroatHit.create(updated.throat_hit),
-            requiredExperience: ExperienceLevel.create(updated.required_experience),
-            createdAt: updated.created_at,
-            updatedAt: updated.updated_at,
-        });
+    async findSuitableFor(experienceLevel: ExperienceLevel, page: number, pageSize: number): Promise<Tobacco[]> {
+        const result = await this.db.select()
+            .from(tobaccoTable)
+            .where(lte(tobaccoTable.required_experience, experienceLevel.getValue()))
+            .orderBy(desc(tobaccoTable.required_experience))
+            .limit(pageSize)
+            .offset((page - 1) * pageSize);
+
+
+        return result.map((row) => this.mapRowToTobacco(row))
     }
 }

@@ -1,4 +1,5 @@
 import { Tobacco } from "../entities/tobacco.entity";
+import { ExperienceLevel } from "../value-objects/experience-level.vo";
 
 export interface ITobaccoRepository {
 
@@ -11,4 +12,12 @@ export interface ITobaccoRepository {
     update(id: string, tobacco: Tobacco): Promise<Tobacco>;
 
     delete(id: string): Promise<void>;
+
+    findSuitableFor(
+        experienceLevel: ExperienceLevel,
+        limit: number,
+        offset: number,
+    ): Promise<Tobacco[]>;
+
+    
 }

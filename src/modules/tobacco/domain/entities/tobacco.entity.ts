@@ -18,14 +18,14 @@ export interface TobaccoProps {
 export class Tobacco {
     private constructor(
         public readonly _id: string,
-        public readonly _brand: string,
-        public readonly _model: string,
-        public readonly _description: string,
-        public readonly _nicotineContent: NicotineContent,
-        public readonly _throatHit: ThroatHit,
-        public readonly _requiredExperience: ExperienceLevel,
-        public readonly _createdAt: Date,
-        public readonly _updatedAt: Date,
+        public readonly brand: string,
+        public readonly model: string,
+        public readonly description: string,
+        public readonly nicotineContent: NicotineContent,
+        public readonly throatHit: ThroatHit,
+        public readonly requiredExperience: ExperienceLevel,
+        public readonly createdAt: Date,
+        public readonly updatedAt: Date,
     ) { }
 
     static create(props: Omit<TobaccoProps, 'id' | 'createdAt' | 'updatedAt'>): Tobacco {
@@ -67,17 +67,17 @@ export class Tobacco {
     //getters
 
     getId(): string { return this._id; }
-    getBrand(): string { return this._brand; }
-    getModel(): string { return this._model; }
-    getDescription(): string { return this._description; }
-    getNicotineContent(): NicotineContent { return this._nicotineContent; }
-    getThroatHit(): ThroatHit { return this._throatHit; }
-    getRequiredExperience(): ExperienceLevel { return this._requiredExperience; }
-    getCreatedAt(): Date { return this._createdAt; }
-    getUpdatedAt(): Date { return this._updatedAt; }
+    getBrand(): string { return this.brand; }
+    getModel(): string { return this.model; }
+    getDescription(): string { return this.description; }
+    getNicotineContent(): NicotineContent { return this.nicotineContent; }
+    getThroatHit(): ThroatHit { return this.throatHit; }
+    getRequiredExperience(): ExperienceLevel { return this.requiredExperience; }
+    getCreatedAt(): Date { return this.createdAt; }
+    getUpdatedAt(): Date { return this.updatedAt; }
 
     getStrength(): number {
-        return this._nicotineContent.getValue() * 0.6 + this._throatHit.getValue() * 0.4
+        return this.nicotineContent.getValue() * 0.6 + this.throatHit.getValue() * 0.4
     }
 
     compareStrength(other: Tobacco): number {
@@ -85,21 +85,21 @@ export class Tobacco {
     }
 
     isSuitableFor(exprinceLevel: ExperienceLevel): boolean {
-        return exprinceLevel.getValue() >= this._requiredExperience.getValue()
+        return exprinceLevel.getValue() >= this.requiredExperience.getValue()
     }
 
 
     toProps(): TobaccoProps {
         return {
             id: this._id,
-            brand: this._brand,
-            model: this._model,
-            description: this._description,
-            nicotineContent: this._nicotineContent,
-            throatHit: this._throatHit,
-            requiredExperience: this._requiredExperience,
-            createdAt: this._createdAt,
-            updatedAt: this._updatedAt,
+            brand: this.brand,
+            model: this.model,
+            description: this.description,
+            nicotineContent: this.nicotineContent,
+            throatHit: this.throatHit,
+            requiredExperience: this.requiredExperience,
+            createdAt: this.createdAt,
+            updatedAt: this.updatedAt,
         };
     }
 }

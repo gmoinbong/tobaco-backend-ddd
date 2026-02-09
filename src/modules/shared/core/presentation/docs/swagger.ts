@@ -7,7 +7,7 @@ export class Swagger {
     title: 'Tobacco Backend API',
     description: `
       Tobacco Backend API
-      **Modules:** Tobacco
+      Modules: Tobacco
     `,
     version: '0.0.1',
     tags: [],

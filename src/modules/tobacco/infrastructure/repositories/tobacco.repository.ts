@@ -47,14 +47,14 @@ export class TobaccoRepository implements ITobaccoRepository {
         const [inserted] = await this.db
             .insert(tobaccoTable)
             .values({
-                brand: tobacco._brand,
-                model: tobacco._model,
-                description: tobacco._description,
-                nicotine_content: tobacco._nicotineContent.getValue(),
-                throat_hit: tobacco._throatHit.getValue(),
-                required_experience: tobacco._requiredExperience.getValue(),
-                created_at: tobacco._createdAt,
-                updated_at: tobacco._updatedAt,
+                brand: tobacco.brand,
+                model: tobacco.model,
+                description: tobacco.description,
+                nicotine_content: tobacco.nicotineContent.getValue(),
+                throat_hit: tobacco.throatHit.getValue(),
+                required_experience: tobacco.requiredExperience.getValue(),
+                created_at: tobacco.createdAt,
+                updated_at: tobacco.updatedAt,
             }).returning();
 
         if (!inserted) {
@@ -66,13 +66,13 @@ export class TobaccoRepository implements ITobaccoRepository {
 
     async update(id: string, tobacco: Tobacco): Promise<Tobacco> {
         const [updated] = await this.db.update(tobaccoTable).set({
-            brand: tobacco._brand,
-            model: tobacco._model,
-            description: tobacco._description,
-            nicotine_content: tobacco._nicotineContent.getValue(),
-            throat_hit: tobacco._throatHit.getValue(),
-            required_experience: tobacco._requiredExperience.getValue(),
-            updated_at: tobacco._updatedAt,
+            brand: tobacco.brand,
+            model: tobacco.model,
+            description: tobacco.description,
+            nicotine_content: tobacco.nicotineContent.getValue(),
+            throat_hit: tobacco.throatHit.getValue(),
+            required_experience: tobacco.requiredExperience.getValue(),
+            updated_at: tobacco.updatedAt,
         }).where(eq(tobaccoTable.id, id)).returning();
 
         if (!updated) {

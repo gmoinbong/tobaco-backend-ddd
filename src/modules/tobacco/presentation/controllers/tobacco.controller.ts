@@ -1,4 +1,3 @@
-//Remove repository logic to repository from controller 
 import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Put } from "@nestjs/common";
 import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiBody } from "@nestjs/swagger";
 import { CreateTobaccoUseCase } from "../../application/use-cases/create-tobacco.use.case";
@@ -6,10 +5,6 @@ import { DeleteTobaccoUseCase } from "../../application/use-cases/delete.tobacco
 import { GetAllTobaccoUseCase } from "../../application/use-cases/get-all-tobacco.use.case";
 import { GetTobaccoByIdUseCase } from "../../application/use-cases/get-tobacco-by-id.use.case";
 import { UpdateTobaccoUseCase } from "../../application/use-cases/update-tobacco.use.case";
-import { Tobacco } from "../../domain/entities/tobacco.entity";
-import { NicotineContent } from "../../domain/value-objects/nicotine-content.vo";
-import { ThroatHit } from "../../domain/value-objects/throat-hit.vo";
-import { ExperienceLevel } from "../../domain/value-objects/experience-level.vo";
 import { CreateTobaccoDto, UpdateTobaccoDto, TobaccoResponseDto } from "../dto";
 import { FindSuitableForUseCase } from "../../application/use-cases/find-suitable-for.use.case";
 
@@ -31,20 +26,7 @@ export class TobaccoController {
     @ApiResponse({ status: 201, description: 'Tobacco product created successfully', type: TobaccoResponseDto })
     @ApiResponse({ status: 400, description: 'Invalid input data' })
     async createTobacco(@Body() dto: CreateTobaccoDto) {
-        const tobacco = Tobacco.create({
-            brand: dto.brand,
-            model: dto.model,
-            description: dto.description,
-            nicotineContent: NicotineContent.create(dto.nicotineContent),
-            throatHit: ThroatHit.create(dto.throatHit),
-            requiredExperience: ExperienceLevel.create(dto.requiredExperience),
-        })
-
-        const result = await this.createTobaccoUseCase.execute({
-            tobacco,
-        })
-
-        return result
+        return await this.createTobaccoUseCase.execute({ dto })
     }
 
     @Get('')
@@ -78,14 +60,7 @@ export class TobaccoController {
     async updateTobacco(@Param('id') id: string, @Body() dto: UpdateTobaccoDto) {
         const tobacco = await this.updateTobaccoUseCase.execute({
             id,
-            tobacco: Tobacco.create({
-                brand: dto.brand,
-                model: dto.model,
-                description: dto.description,
-                nicotineContent: NicotineContent.create(dto.nicotineContent),
-                throatHit: ThroatHit.create(dto.throatHit),
-                requiredExperience: ExperienceLevel.create(dto.requiredExperience),
-            }),
+            dto
         });
         return tobacco;
     }

@@ -11,7 +11,7 @@ export interface TobaccoProps {
     nicotineContent: NicotineContent;
     throatHit: ThroatHit;
     requiredExperience: ExperienceLevel;
-    createdAt: Date;
+    createdAt?: Date;
     updatedAt: Date;
 }
 
@@ -59,7 +59,7 @@ export class Tobacco {
             props.nicotineContent,
             props.throatHit,
             props.requiredExperience,
-            props.createdAt,
+            props.createdAt || new Date(),
             props.updatedAt,
         );
     }

@@ -1,5 +1,7 @@
 import { Tobacco } from "../entities/tobacco.entity";
 import { ExperienceLevel } from "../value-objects/experience-level.vo";
+import { NicotineContent } from "../value-objects/nicotine-content.vo";
+import { ThroatHit } from "../value-objects/throat-hit.vo";
 
 export interface ITobaccoRepository {
 
@@ -19,5 +21,12 @@ export interface ITobaccoRepository {
         page: number,
     ): Promise<Tobacco[]>;
 
+    recommend(
+        experienceLevel: ExperienceLevel,
+        throatHit: ThroatHit,
+        nicotineContent: NicotineContent,
+        page: number,
+        pageSize: number,
+    ): Promise<Tobacco[]>;
 
 }

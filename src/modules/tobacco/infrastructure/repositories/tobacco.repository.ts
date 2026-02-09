@@ -3,7 +3,7 @@ import type { Database } from "@shared/core/infrastructure/database/database.typ
 import { ITobaccoRepository } from "../../domain/repositories/tobacco.repository.interface";
 import { Tobacco } from "../../domain/entities/tobacco.entity";
 import { tobaccoTable } from "@shared/core/infrastructure/database/schema";
-import { desc, eq, lte } from "drizzle-orm";
+import { and, desc, eq, lte } from "drizzle-orm";
 import { NicotineContent } from "../../domain/value-objects/nicotine-content.vo";
 import { ThroatHit } from "../../domain/value-objects/throat-hit.vo";
 import { ExperienceLevel } from "../../domain/value-objects/experience-level.vo";
@@ -106,5 +106,21 @@ export class TobaccoRepository implements ITobaccoRepository {
 
 
         return result.map((row) => this.mapRowToTobacco(row))
+    }
+
+    async recommend(experienceLevel: ExperienceLevel, throatHit: ThroatHit, nicotineContent: NicotineContent,
+        page: number, pageSize: number): Promise<Tobacco[]> {
+        const result = await this.db.select()
+            .from(tobaccoTable)
+            .where(and(
+                lte(tobaccoTable.throat_hit, throatHit.getValue()),
+                lte(tobaccoTable.nicotine_content, nicotineContent.getValue()),
+                lte(tobaccoTable.required_experience, experienceLevel.getValue()),
+            ))
+            .orderBy(desc(tobaccoTable.throat_hit))
+            .limit(pageSize)
+            .offset((page - 1) * pageSize);
+
+        return result.map((row) => this.mapRowToTobacco(row));
     }
 }

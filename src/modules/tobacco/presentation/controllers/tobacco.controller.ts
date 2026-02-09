@@ -1,5 +1,5 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Put } from "@nestjs/common";
-import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiBody } from "@nestjs/swagger";
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Put, Query } from "@nestjs/common";
+import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiBody, ApiQuery } from "@nestjs/swagger";
 import { CreateTobaccoUseCase } from "../../application/use-cases/create-tobacco.use.case";
 import { DeleteTobaccoUseCase } from "../../application/use-cases/delete.tobacco.use.case";
 import { GetAllTobaccoUseCase } from "../../application/use-cases/get-all-tobacco.use.case";
@@ -7,6 +7,7 @@ import { GetTobaccoByIdUseCase } from "../../application/use-cases/get-tobacco-b
 import { UpdateTobaccoUseCase } from "../../application/use-cases/update-tobacco.use.case";
 import { CreateTobaccoDto, UpdateTobaccoDto, TobaccoResponseDto } from "../dto";
 import { FindSuitableForUseCase } from "../../application/use-cases/find-suitable-for.use.case";
+import { RecommendTobaccoFacade } from "../../application/facades/recommend-tobacco.facade";
 
 @ApiTags('Tobacco')
 @Controller('tobacco')
@@ -18,6 +19,7 @@ export class TobaccoController {
         private readonly updateTobaccoUseCase: UpdateTobaccoUseCase,
         private readonly deleteTobaccoUseCase: DeleteTobaccoUseCase,
         private readonly getTobaccoSuitableForUseCase: FindSuitableForUseCase,
+        private readonly recommendTobaccoFacade: RecommendTobaccoFacade,
     ) { }
 
     @Post('create')
@@ -37,6 +39,23 @@ export class TobaccoController {
             limit: 10,
             offset: 0,
         })
+    }
+
+
+    @Get('recommend')
+    @ApiOperation({ summary: 'Recommend tobacco products', description: 'Recommends tobacco products based on the given parameters' })
+    @ApiQuery({ name: 'experienceLevel', description: 'Experience level', example: 1, type: Number, })
+    @ApiQuery({ name: 'throatHit', description: 'Throat hit', example: 1, type: Number, })
+    @ApiQuery({ name: 'nicotineContent', description: 'Nicotine content', example: 1, type: Number, })
+    @ApiResponse({ status: 200, description: 'List of recommended tobacco products', type: [TobaccoResponseDto] })
+    async recommendTobacco(@Query('experienceLevel', ParseIntPipe) experienceLevel: number, @Query('throatHit', ParseIntPipe) throatHit: number, @Query('nicotineContent', ParseIntPipe) nicotineContent: number) {
+        return await this.recommendTobaccoFacade.execute({
+            experienceLevel,
+            throatHit,
+            nicotineContent,
+            page: 1,
+            pageSize: 10,
+        });
     }
 
     @Get(':id')
@@ -87,4 +106,5 @@ export class TobaccoController {
             page: 1,
         })
     }
+
 }

@@ -98,6 +98,19 @@ $ npm run test:e2e
 $ npm run test:cov
 ```
 
+## Terraform (AWS VPC)
+
+Инфраструктура в каталоге `terraform/`: VPC, public/private подсети, NAT Gateway. **Команды запускать из `terraform/`**, иначе Terraform не найдёт конфигурацию:
+
+```bash
+cd terraform
+terraform init
+terraform plan
+terraform apply
+```
+
+Подробности и переменные — см. [terraform/README.md](terraform/README.md).
+
 ## Deployment
 
 When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.

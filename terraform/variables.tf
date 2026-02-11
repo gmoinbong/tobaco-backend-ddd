@@ -27,3 +27,9 @@ variable "availability_zones" {
   type        = list(string)
   default     = ["eu-central-1a", "eu-central-1b"]
 }
+
+variable "db_password" {
+  description = "Master password for RDS Postgres"
+  type        = string
+  sensitive   = true
+}

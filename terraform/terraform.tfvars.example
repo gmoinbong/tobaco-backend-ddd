@@ -3,5 +3,8 @@ environment              = "dev"
 vpc_cidr                 = "10.0.0.0/16"
 availability_zones_count = 2
 
+# Required for RDS. Do not commit real value; use TF_VAR_db_password or a secrets backend.
+# db_password = "your-secure-password"
+
 # If IAM user has no ec2:DescribeAvailabilityZones, set AZs explicitly (region-specific):
 # availability_zones = ["eu-central-1a", "eu-central-1b"]

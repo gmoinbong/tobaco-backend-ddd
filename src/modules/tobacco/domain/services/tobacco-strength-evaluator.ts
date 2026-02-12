@@ -9,7 +9,7 @@ export enum TobaccoSuitability {
     EXTRA_STRONG = 'extra_strong',
 }
 
-export class TobaccoStrengthEvaluator {
+export class TobaccoStrengthService {
     static evaluate(params:
         {
             nicotine: NicotineContent,

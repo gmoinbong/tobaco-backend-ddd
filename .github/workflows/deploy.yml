@@ -44,17 +44,13 @@ jobs:
           SUBNETS_JSON=$(python3 -c "import json,sys; print(json.dumps(sys.argv[1].split(',')))" "$SUBNET_IDS")
           NETWORK_CONFIG="{\"awsvpcConfiguration\":{\"subnets\":$SUBNETS_JSON,\"securityGroups\":[\"$SG_ID\"],\"assignPublicIp\":\"DISABLED\"}}"
 
-          DB_URL="postgresql://nestadmin:${{ secrets.DB_PASSWORD }}@${{ secrets.RDS_ENDPOINT }}:5432/nestdb?sslmode=require"
-          OVERRIDES=$(jq -n \
-            --arg url "$DB_URL" \
-            '{containerOverrides: [{name: "nest-app", command: ["npm", "run", "db:migrate"], environment: [{name: "NODE_ENV", value: "production"}, {name: "DATABASE_WRITE_URL", value: $url}]}]}')
-
+          # Use task definition env (DATABASE_WRITE_URL with sslmode=require from terraform). Override only command.
           TASK_ARN=$(aws ecs run-task \
             --cluster $ECS_CLUSTER \
             --task-definition nest-app \
             --launch-type FARGATE \
             --network-configuration "$NETWORK_CONFIG" \
-            --overrides "$OVERRIDES" \
+            --overrides '{"containerOverrides":[{"name":"nest-app","command":["npm","run","db:migrate"]}]}' \
             --query 'tasks[0].taskArn' --output text)
 
           echo "task_arn=$TASK_ARN" >> $GITHUB_OUTPUT

@@ -26,7 +26,7 @@ resource "aws_ecs_task_definition" "app" {
     # App expects DATABASE_WRITE_URL (and optional DATABASE_READ_REPLICA_URLS), not DB_HOST/DB_PORT/...
     # If db_password contains @ # : / etc., use a password without them or URL-encode manually
     environment = [
-      { name = "DATABASE_WRITE_URL", value = "postgresql://${aws_db_instance.postgres.username}:${var.db_password}@${aws_db_instance.postgres.address}:${aws_db_instance.postgres.port}/${aws_db_instance.postgres.db_name}" },
+      { name = "DATABASE_WRITE_URL", value = "postgresql://${aws_db_instance.postgres.username}:${var.db_password}@${aws_db_instance.postgres.address}:${aws_db_instance.postgres.port}/${aws_db_instance.postgres.db_name}?sslmode=require" },
       { name = "DATABASE_READ_REPLICA_URLS", value = "" }
     ]
     logConfiguration = {

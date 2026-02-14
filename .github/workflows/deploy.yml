@@ -78,13 +78,22 @@ jobs:
           [ -z "$TASK_ARN" ] || [ "$TASK_ARN" = "None" ] && echo "No task ARN" && exit 0
           TASK_ID="${TASK_ARN##*/}"
           LOG_GROUP="/ecs/${ECS_CLUSTER%-cluster}-app"
-          LOG_STREAM="ecs/nest-app/${TASK_ID}"
-          echo "=== Migration container logs ==="
-          aws logs get-log-events \
+          echo "=== Migration logs (task $TASK_ID) ==="
+          sleep 10
+          aws logs filter-log-events \
             --log-group-name "$LOG_GROUP" \
-            --log-stream-name "$LOG_STREAM" \
+            --log-stream-names "ecs/nest-app/${TASK_ID}" \
             --query 'events[*].message' \
-            --output text 2>/dev/null || echo "Logs not found (task may still be starting)"
+            --output text || true
+          echo "--- Recent log streams (if above empty) ---"
+          aws logs describe-log-streams \
+            --log-group-name "$LOG_GROUP" \
+            --log-stream-name-prefix "ecs/nest-app" \
+            --order-by LastEventTime \
+            --descending \
+            --limit 5 \
+            --query 'logStreams[*].[logStreamName,lastEventTimestamp]' \
+            --output table 2>/dev/null || true
 
       - name: Deploy to ECS
         run: |

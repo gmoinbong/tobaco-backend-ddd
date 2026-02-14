@@ -1,4 +1,4 @@
-# RDS: allow Postgres from VPC only
+# RDS: allow Postgres from VPC; optionally from external CIDRs (e.g. your IP for migrations)
 resource "aws_security_group" "db" {
   name   = "${var.environment}-db-sg"
   vpc_id = module.vpc.vpc_id
@@ -59,6 +59,24 @@ resource "aws_security_group" "ecs" {
     protocol        = "tcp"
     security_groups = [aws_security_group.alb.id]
   }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Environment = var.environment
+    Project     = "tobaco-backend"
+  }
+}
+
+# Bastion: SSM Session Manager only, no SSH ingress needed
+resource "aws_security_group" "bastion" {
+  name   = "${var.environment}-bastion-sg"
+  vpc_id = module.vpc.vpc_id
 
   egress {
     from_port   = 0

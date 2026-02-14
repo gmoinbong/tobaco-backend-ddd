@@ -39,6 +39,7 @@ jobs:
           docker push $ECR_REGISTRY/nest-app:latest
 
       - name: Run database migrations
+        id: migration
         run: |
           SUBNETS_JSON=$(python3 -c "import json,sys; print(json.dumps(sys.argv[1].split(',')))" "$SUBNET_IDS")
           NETWORK_CONFIG="{\"awsvpcConfiguration\":{\"subnets\":$SUBNETS_JSON,\"securityGroups\":[\"$SG_ID\"],\"assignPublicIp\":\"DISABLED\"}}"
@@ -50,6 +51,8 @@ jobs:
             --network-configuration "$NETWORK_CONFIG" \
             --overrides '{"containerOverrides":[{"name":"nest-app","command":["npm","run","db:migrate"]}]}' \
             --query 'tasks[0].taskArn' --output text)
+
+          echo "task_arn=$TASK_ARN" >> $GITHUB_OUTPUT
 
           if [ -z "$TASK_ARN" ] || [ "$TASK_ARN" = "None" ]; then
             echo "❌ Failed to start migration task"
@@ -67,6 +70,21 @@ jobs:
             echo "❌ Migration failed with exit code $EXIT_CODE"
             exit 1
           fi
+
+      - name: Show migration logs on failure
+        if: failure() && steps.migration.outcome == 'failure'
+        run: |
+          TASK_ARN="${{ steps.migration.outputs.task_arn }}"
+          [ -z "$TASK_ARN" ] || [ "$TASK_ARN" = "None" ] && echo "No task ARN" && exit 0
+          TASK_ID="${TASK_ARN##*/}"
+          LOG_GROUP="/ecs/${ECS_CLUSTER%-cluster}-app"
+          LOG_STREAM="ecs/nest-app/${TASK_ID}"
+          echo "=== Migration container logs ==="
+          aws logs get-log-events \
+            --log-group-name "$LOG_GROUP" \
+            --log-stream-name "$LOG_STREAM" \
+            --query 'events[*].message' \
+            --output text 2>/dev/null || echo "Logs not found (task may still be starting)"
 
       - name: Deploy to ECS
         run: |

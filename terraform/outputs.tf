@@ -34,6 +34,17 @@ output "alb_zone_id" {
   value       = aws_lb.alb.zone_id
 }
 
+# ECS (for deploy workflow)
+output "ecs_security_group_id" {
+  description = "ECS security group ID (for migration task network config)"
+  value       = aws_security_group.ecs.id
+}
+
+output "ecs_cluster_name" {
+  description = "ECS cluster name"
+  value       = aws_ecs_cluster.app.name
+}
+
 # RDS (for local/dev connection or app env)
 output "rds_endpoint" {
   description = "RDS instance endpoint (host only, no port)"

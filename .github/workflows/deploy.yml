@@ -1,0 +1,76 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches: [master]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+    permissions:
+      id-token: write
+      contents: read
+    env:
+      ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
+      SUBNET_IDS: ${{ secrets.SUBNET_IDS }}
+      SG_ID: ${{ secrets.SG_ID }}
+      ECS_CLUSTER: ${{ secrets.ECS_CLUSTER }}
+      ECS_SERVICE: ${{ secrets.ECS_SERVICE }}
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: eu-central-1
+
+      - name: Login to Amazon ECR
+        run: |
+          aws ecr get-login-password --region eu-central-1 | \
+            docker login --username AWS --password-stdin $ECR_REGISTRY
+
+      - name: Build Docker image
+        run: |
+          docker build -t nest-app:${{ github.sha }} .
+          docker tag nest-app:${{ github.sha }} $ECR_REGISTRY/nest-app:latest
+          docker push $ECR_REGISTRY/nest-app:latest
+
+      - name: Run database migrations
+        run: |
+          SUBNETS_JSON=$(python3 -c "import json,sys; print(json.dumps(sys.argv[1].split(',')))" "$SUBNET_IDS")
+          NETWORK_CONFIG="{\"awsvpcConfiguration\":{\"subnets\":$SUBNETS_JSON,\"securityGroups\":[\"$SG_ID\"],\"assignPublicIp\":\"DISABLED\"}}"
+
+          TASK_ARN=$(aws ecs run-task \
+            --cluster $ECS_CLUSTER \
+            --task-definition nest-app \
+            --launch-type FARGATE \
+            --network-configuration "$NETWORK_CONFIG" \
+            --overrides '{"containerOverrides":[{"name":"nest-app","command":["npm","run","db:migrate"]}]}' \
+            --query 'tasks[0].taskArn' --output text)
+
+          if [ -z "$TASK_ARN" ] || [ "$TASK_ARN" = "None" ]; then
+            echo "❌ Failed to start migration task"
+            exit 1
+          fi
+
+          aws ecs wait tasks-stopped --cluster $ECS_CLUSTER --tasks $TASK_ARN
+
+          EXIT_CODE=$(aws ecs describe-tasks \
+            --cluster $ECS_CLUSTER \
+            --tasks $TASK_ARN \
+            --query 'tasks[0].containers[0].exitCode' --output text)
+
+          if [ "$EXIT_CODE" != "0" ]; then
+            echo "❌ Migration failed with exit code $EXIT_CODE"
+            exit 1
+          fi
+
+      - name: Deploy to ECS
+        run: |
+          aws ecs update-service \
+            --cluster $ECS_CLUSTER \
+            --service $ECS_SERVICE \
+            --force-new-deployment

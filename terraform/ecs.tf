@@ -16,8 +16,8 @@ resource "aws_ecs_task_definition" "app" {
   memory                   = "512"
 
   container_definitions = jsonencode([{
-    name  = "nest-app"
-    image = "${aws_ecr_repository.app.repository_url}:latest"
+    name      = "nest-app"
+    image     = "${aws_ecr_repository.app.repository_url}:latest"
     essential = true
     portMappings = [{
       containerPort = 3000

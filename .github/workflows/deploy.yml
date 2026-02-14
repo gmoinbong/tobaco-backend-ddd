@@ -38,67 +38,164 @@ jobs:
           docker tag nest-app:${{ github.sha }} $ECR_REGISTRY/nest-app:latest
           docker push $ECR_REGISTRY/nest-app:latest
 
+      - name: Debug - Verify migration step
+        run: |
+          echo "================================================"
+          echo "🔍 PRE-MIGRATION CHECK"
+          echo "================================================"
+          echo "ECS Cluster: $ECS_CLUSTER"
+          echo "Subnets: $SUBNET_IDS"
+          echo "Security Group: $SG_ID"
+          echo "Task Definition: nest-app"
+          echo "================================================"
+
       - name: Run database migrations
         id: migration
         run: |
+          echo "================================================"
+          echo "🚀 STARTING DATABASE MIGRATIONS"
+          echo "================================================"
+          
+          # Prepare network configuration
           SUBNETS_JSON=$(python3 -c "import json,sys; print(json.dumps(sys.argv[1].split(',')))" "$SUBNET_IDS")
           NETWORK_CONFIG="{\"awsvpcConfiguration\":{\"subnets\":$SUBNETS_JSON,\"securityGroups\":[\"$SG_ID\"],\"assignPublicIp\":\"DISABLED\"}}"
-
-          # Use task definition env (DATABASE_WRITE_URL with sslmode=require from terraform). Override only command.
-          TASK_ARN=$(aws ecs run-task \
+          
+          echo "Network config prepared"
+          echo "Subnets: $SUBNETS_JSON"
+          
+          # Run migration task
+          echo "Launching migration task..."
+          TASK_OUTPUT=$(aws ecs run-task \
             --cluster $ECS_CLUSTER \
             --task-definition nest-app \
             --launch-type FARGATE \
             --network-configuration "$NETWORK_CONFIG" \
             --overrides '{"containerOverrides":[{"name":"nest-app","command":["npm","run","db:migrate"]}]}' \
-            --query 'tasks[0].taskArn' --output text)
-
+            2>&1)
+          
+          TASK_ARN=$(echo "$TASK_OUTPUT" | jq -r '.tasks[0].taskArn // empty')
+          
+          echo "Task output:"
+          echo "$TASK_OUTPUT"
+          echo ""
+          echo "Extracted Task ARN: $TASK_ARN"
+          
+          # Save to output
           echo "task_arn=$TASK_ARN" >> $GITHUB_OUTPUT
-
-          if [ -z "$TASK_ARN" ] || [ "$TASK_ARN" = "None" ]; then
+          
+          # Check if task started successfully
+          if [ -z "$TASK_ARN" ] || [ "$TASK_ARN" = "null" ]; then
             echo "❌ Failed to start migration task"
+            echo "Full AWS response:"
+            echo "$TASK_OUTPUT" | jq '.' || echo "$TASK_OUTPUT"
             exit 1
           fi
-
+          
+          TASK_ID="${TASK_ARN##*/}"
+          echo "✅ Migration task started: $TASK_ID"
+          echo "⏳ Waiting for task to complete..."
+          
+          # Wait for task to stop
           aws ecs wait tasks-stopped --cluster $ECS_CLUSTER --tasks $TASK_ARN
+          
+          echo "Task stopped. Checking exit code..."
+          
+          # Get task details
+          TASK_DETAILS=$(aws ecs describe-tasks \
+            --cluster $ECS_CLUSTER \
+            --tasks $TASK_ARN)
+          
+          EXIT_CODE=$(echo "$TASK_DETAILS" | jq -r '.tasks[0].containers[0].exitCode // "null"')
+          STOP_REASON=$(echo "$TASK_DETAILS" | jq -r '.tasks[0].stoppedReason // "unknown"')
+          
+          echo "Exit code: $EXIT_CODE"
+          echo "Stop reason: $STOP_REASON"
+          
+          # Get migration logs immediately
+          LOG_GROUP="/ecs/dev-nest-app"
+          LOG_STREAM="ecs/nest-app/$TASK_ID"
+          
+          echo ""
+          echo "================================================"
+          echo "📋 MIGRATION LOGS"
+          echo "================================================"
+          sleep 5  # Give CloudWatch time to receive logs
+          
+          aws logs tail "$LOG_GROUP" --follow --since 5m --log-stream-names "$LOG_STREAM" 2>/dev/null || \
+            aws logs filter-log-events \
+              --log-group-name "$LOG_GROUP" \
+              --log-stream-names "$LOG_STREAM" \
+              --query 'events[*].message' \
+              --output text 2>/dev/null || \
+            echo "⚠️ Could not retrieve logs from $LOG_GROUP/$LOG_STREAM"
+          
+          echo "================================================"
+          
+          # Check exit code
+          if [ "$EXIT_CODE" != "0" ]; then
+            echo "❌ Migration failed with exit code: $EXIT_CODE"
+            echo "Stop reason: $STOP_REASON"
+            exit 1
+          fi
+          
+          echo "✅ Migrations completed successfully"
+          echo "================================================"
 
-          EXIT_CODE=$(aws ecs describe-tasks \
+      - name: Show detailed migration logs on failure
+        if: failure() && steps.migration.outputs.task_arn != ''
+        run: |
+          echo "================================================"
+          echo "🔴 MIGRATION FAILED - DETAILED LOGS"
+          echo "================================================"
+          
+          TASK_ARN="${{ steps.migration.outputs.task_arn }}"
+          TASK_ID="${TASK_ARN##*/}"
+          LOG_GROUP="/ecs/dev-nest-app"
+          
+          echo "Task ARN: $TASK_ARN"
+          echo "Task ID: $TASK_ID"
+          echo "Log Group: $LOG_GROUP"
+          echo ""
+          
+          # Get full task description
+          echo "--- Task Details ---"
+          aws ecs describe-tasks \
             --cluster $ECS_CLUSTER \
             --tasks $TASK_ARN \
-            --query 'tasks[0].containers[0].exitCode' --output text)
-
-          if [ "$EXIT_CODE" != "0" ]; then
-            echo "❌ Migration failed with exit code $EXIT_CODE"
-            exit 1
-          fi
-
-      - name: Show migration logs on failure
-        if: failure() && steps.migration.outcome == 'failure'
-        run: |
-          TASK_ARN="${{ steps.migration.outputs.task_arn }}"
-          [ -z "$TASK_ARN" ] || [ "$TASK_ARN" = "None" ] && echo "No task ARN" && exit 0
-          TASK_ID="${TASK_ARN##*/}"
-          LOG_GROUP="/ecs/${ECS_CLUSTER%-cluster}-app"
-          echo "=== Migration logs (task $TASK_ID) ==="
-          sleep 10
+            --query 'tasks[0].{Status:lastStatus,StopCode:stopCode,StopReason:stoppedReason,ExitCode:containers[0].exitCode,Reason:containers[0].reason}' \
+            --output table
+          
+          echo ""
+          echo "--- Migration Logs ---"
           aws logs filter-log-events \
             --log-group-name "$LOG_GROUP" \
-            --log-stream-names "ecs/nest-app/${TASK_ID}" \
+            --log-stream-names "ecs/nest-app/$TASK_ID" \
             --query 'events[*].message' \
-            --output text || true
-          echo "--- Recent log streams (if above empty) ---"
+            --output text || echo "No logs found"
+          
+          echo ""
+          echo "--- Recent Log Streams ---"
           aws logs describe-log-streams \
             --log-group-name "$LOG_GROUP" \
             --log-stream-name-prefix "ecs/nest-app" \
             --order-by LastEventTime \
             --descending \
-            --limit 5 \
-            --query 'logStreams[*].[logStreamName,lastEventTimestamp]' \
-            --output table 2>/dev/null || true
+            --limit 10 \
+            --query 'logStreams[*].[logStreamName,lastEventTime]' \
+            --output table
+          
+          echo "================================================"
 
       - name: Deploy to ECS
         run: |
+          echo "================================================"
+          echo "🚢 DEPLOYING TO ECS"
+          echo "================================================"
+          
           aws ecs update-service \
             --cluster $ECS_CLUSTER \
             --service $ECS_SERVICE \
             --force-new-deployment
+          
+          echo "✅ Deployment initiated"
+          echo "================================================"

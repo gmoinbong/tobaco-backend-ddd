@@ -1,0 +1,2 @@
+CREATE INDEX "idx_recommend" ON "tobacco" USING btree ("required_experience","throat_hit","nicotine_content");--> statement-breakpoint
+CREATE INDEX "idx_suitable" ON "tobacco" USING btree ("required_experience");

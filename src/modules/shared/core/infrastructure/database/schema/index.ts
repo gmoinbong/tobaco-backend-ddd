@@ -15,7 +15,11 @@ export const tobaccoTable = pgTable('tobacco', {
     updated_at: timestamp('updated_at').notNull().defaultNow(),
 
 }, (table) => ({
-    experience_level: index('experience_level_index').on(table.required_experience),
-    nicotine_content: index('nicotine_content_index').on(table.nicotine_content)
+    recommendIdx: index('idx_recommend')
+        .on(table.required_experience, table.throat_hit, table.nicotine_content),
+
+    suitableIdx: index('idx_suitable')
+        .on(table.required_experience),
+
 })
 );

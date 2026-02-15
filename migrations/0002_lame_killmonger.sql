@@ -1,0 +1,1 @@
+CREATE INDEX "idx_exp_nicotine" ON "tobacco" USING btree ("required_experience","nicotine_content");

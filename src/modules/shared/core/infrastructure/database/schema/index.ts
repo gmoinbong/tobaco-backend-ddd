@@ -21,5 +21,7 @@ export const tobaccoTable = pgTable('tobacco', {
     suitableIdx: index('idx_suitable')
         .on(table.required_experience),
 
+    expNicotineIdx: index('idx_exp_nicotine')
+        .on(table.required_experience, table.nicotine_content),
 })
 );

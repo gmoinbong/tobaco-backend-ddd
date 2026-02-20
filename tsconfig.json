@@ -23,7 +23,7 @@
     "noFallthroughCasesInSwitch": false,
     "paths": {
       "@shared/*": [
-        "src/modules/shared/*"
+        "libs/shared/src/*"
       ]
     }
   }

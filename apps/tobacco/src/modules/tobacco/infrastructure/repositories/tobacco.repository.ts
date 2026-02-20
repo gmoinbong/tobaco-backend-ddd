@@ -10,6 +10,8 @@ import { ExperienceLevel } from "../../domain/value-objects/experience-level.vo"
 import { SHARED_DI_TOKENS } from "@shared/core/infrastructure/database/constants/tokens";
 import { InternalServerError, NotFoundError } from '@shared/core/domain';
 
+export type TobaccoEntity = typeof tobaccoTable.$inferSelect;
+
 export class TobaccoRepository implements ITobaccoRepository {
     constructor(
         @Inject(SHARED_DI_TOKENS.DATABASE_CLIENT)

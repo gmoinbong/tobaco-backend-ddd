@@ -1,4 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger';
+// import { z } from '@anatine/zod-nestjs'
+
+// export tobbacoSchema = z.object({
+
+// })
+
+
+
+// const createTobaccoSchema = tobbacoSchema.pick()
 
 export class CreateTobaccoDto {
     @ApiProperty({ description: 'Brand name', example: 'Camel' })

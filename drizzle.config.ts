@@ -8,7 +8,7 @@ const sslRequired = url.includes('sslmode=require') || url.includes('ssl=true');
 const parsed = sslRequired ? new URL(url) : null;
 
 export default defineConfig({
-    schema: './src/modules/shared/core/infrastructure/database/schema/index.ts',
+    schema: './libs/shared/src/core/infrastructure/database/schema/index.ts',
     out: './migrations',
     dialect: 'postgresql',
     dbCredentials: parsed

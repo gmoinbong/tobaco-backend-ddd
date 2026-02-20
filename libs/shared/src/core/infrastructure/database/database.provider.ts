@@ -32,15 +32,19 @@ export const DatabaseClientProvider: Provider = {
     provide: SHARED_DI_TOKENS.DATABASE_CLIENT,
     inject: [SHARED_DI_TOKENS.DATABASE_CONFIG],
     useFactory(config: DatabaseConfig) {
-        const cfg = {
+        const sslRequired = config.DATABASE_WRITE_URL.includes('sslmode=require');
+        const primaryPool = new Pool({
             connectionString: config.DATABASE_WRITE_URL,
-        };
-        const primaryPool = new Pool(cfg);
+            ...(sslRequired && { ssl: { rejectUnauthorized: false } }),
+        });
 
         const primaryDb = drizzle(primaryPool, { schema });
 
         const replicas = config.DATABASE_READ_REPLICA_URLS.map((url) => {
-            const pool = new Pool({ connectionString: url });
+            const pool = new Pool({
+                connectionString: url,
+                ...(url.includes('sslmode=require') && { ssl: { rejectUnauthorized: false } }),
+            });
             return drizzle(pool, { schema });
         });
         const db =

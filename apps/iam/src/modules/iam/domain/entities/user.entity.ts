@@ -52,7 +52,6 @@ export class User {
     }
 
     async validatePassword(password: string): Promise<boolean> {
-        const hashedPassword = await bcrypt.compare(password, this.password);
-        return hashedPassword;
+        return bcrypt.compare(password, this.password);
     }
 }

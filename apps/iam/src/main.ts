@@ -1,7 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { Logger } from 'nestjs-pino';
 import { Transport } from '@nestjs/microservices';
-import { IAMModule } from './module/iam.module';
+import { IAMModule } from './modules/iam/iam.module';
 import { Swagger } from '@shared/index';
 
 async function bootstrap() {

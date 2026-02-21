@@ -8,6 +8,13 @@
       "when": 1768869360972,
       "tag": "0000_salty_nemesis",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1771678386172,
+      "tag": "0001_damp_radioactive_man",
+      "breakpoints": true
     }
   ]
 }

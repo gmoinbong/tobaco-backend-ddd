@@ -32,6 +32,7 @@
     "db:studio": "drizzle-kit studio"
   },
   "dependencies": {
+    "@nestjs/cache-manager": "^3.1.0",
     "@nestjs/common": "^11.0.1",
     "@nestjs/config": "^4.0.2",
     "@nestjs/core": "^11.0.1",
@@ -42,6 +43,7 @@
     "@nestjs/platform-express": "^11.0.1",
     "@nestjs/swagger": "^11.2.5",
     "bcrypt": "^6.0.0",
+    "cache-manager": "^7.2.8",
     "drizzle-orm": "^0.45.1",
     "ioredis": "^5.9.3",
     "nestjs-pino": "^4.5.0",

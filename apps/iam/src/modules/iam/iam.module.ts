@@ -9,6 +9,7 @@ import { UserService } from './application/user.service';
 import { IAMRepository } from './infrastructure/repositories/iam.repository';
 import { IAM_DI_TOKENS } from './iam.tokens';
 import { SharedModule } from '@shared/shared.module';
+import { CacheModule } from '@nestjs/cache-manager';
 import { JwtModule } from '@nestjs/jwt';
 
 @Module({
@@ -21,6 +22,9 @@ import { JwtModule } from '@nestjs/jwt';
       secret: process.env.JWT_SECRET,
       signOptions: { expiresIn: '1h' },
     }),
+    CacheModule.register({
+      isGlobal: true,
+    }),
   ],
   providers: [
     AuthService,
@@ -31,4 +35,4 @@ import { JwtModule } from '@nestjs/jwt';
     },
   ],
 })
-export class IAMModule {}
+export class IAMModule { }

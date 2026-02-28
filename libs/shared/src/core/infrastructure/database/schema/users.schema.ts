@@ -1,4 +1,5 @@
 import { varchar } from "drizzle-orm/pg-core";
+import { boolean } from "drizzle-orm/pg-core";
 import { timestamp } from "drizzle-orm/pg-core";
 import { uuid } from "drizzle-orm/pg-core";
 import { pgTable } from "drizzle-orm/pg-core";
@@ -10,4 +11,5 @@ export const usersTable = pgTable('users', {
     password: varchar('password', { length: 255 }).notNull(),
     created_at: timestamp('created_at').notNull().defaultNow(),
     updated_at: timestamp('updated_at').notNull().defaultNow(),
+    is_verified: boolean('is_verified').notNull().default(false),
 });

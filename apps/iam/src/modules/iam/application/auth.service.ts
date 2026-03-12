@@ -10,10 +10,11 @@ import type { Cache } from "cache-manager";
 @Injectable()
 export class AuthService {
 
-  constructor(@Inject(CACHE_MANAGER)
-  private readonly userService: UserService,
+  constructor(
+    private readonly userService: UserService,
     private readonly jwtService: JwtService,
-    private readonly cacheManager: Cache) { }
+    @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
+  ) {}
 
 
   // private async getAccessToken(email: string): Promise<string> {

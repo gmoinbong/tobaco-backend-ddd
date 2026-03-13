@@ -6,6 +6,7 @@ import { Swagger } from '@shared/index';
 
 async function bootstrap() {
   const app = await NestFactory.create(IAMModule, { bufferLogs: true });
+  app.enableCors({origin: 'http://localhost:5173'})
   const logger = app.get<Logger>(Logger);
   app.useLogger(logger);
 

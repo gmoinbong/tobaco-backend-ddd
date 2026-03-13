@@ -4,7 +4,7 @@ import { AppService } from './app.service';
 import { ConfigModule } from '@nestjs/config';
 import { DevtoolsModule } from '@nestjs/devtools-integration';
 import { LoggerModule } from 'nestjs-pino';
-import { TobaccoModule } from '../modules/tobacco/tobacco.module';
+import { TobaccoModule } from '../tobacco/src/modules/tobacco/tobacco.module';
 import { SharedModule } from '@shared/shared.module';
 import { loggerOptions } from '@shared/core/infrastructure/logger/logger.config';
 

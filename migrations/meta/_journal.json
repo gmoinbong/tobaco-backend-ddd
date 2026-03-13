@@ -15,6 +15,13 @@
       "when": 1771678386172,
       "tag": "0001_damp_radioactive_man",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1773438836811,
+      "tag": "0002_parched_cloak",
+      "breakpoints": true
     }
   ]
 }

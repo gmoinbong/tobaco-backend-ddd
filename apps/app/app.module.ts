@@ -7,9 +7,23 @@ import { LoggerModule } from 'nestjs-pino';
 import { TobaccoModule } from '../tobacco/src/modules/tobacco/tobacco.module';
 import { SharedModule } from '@shared/shared.module';
 import { loggerOptions } from '@shared/core/infrastructure/logger/logger.config';
+import { JetstreamModule } from '@horizon-republic/nestjs-jetstream';
+import { AuthGatewayController } from './gateway/auth.gateway.controller';
+import { UsersGatewayController } from './gateway/users.gateway.controller';
 
 @Module({
   imports: [TobaccoModule, SharedModule,
+    JetstreamModule.forRoot({
+      name: "gateway",
+      servers: ['nats://localhost:4222'],
+      consumer: false,
+    }),
+    JetstreamModule.forFeature({
+      name: "iam",
+    }),
+    JetstreamModule.forFeature({
+      name: "users"
+    }),
     ConfigModule.forRoot({
       isGlobal: true,
     }),
@@ -18,7 +32,7 @@ import { loggerOptions } from '@shared/core/infrastructure/logger/logger.config'
     }),
     LoggerModule.forRoot(loggerOptions()),
   ],
-  controllers: [AppController],
+  controllers: [AppController, AuthGatewayController, UsersGatewayController],
   providers: [AppService],
 })
 export class AppModule { }

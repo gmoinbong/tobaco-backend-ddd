@@ -3,10 +3,17 @@ import { Logger } from 'nestjs-pino';
 import { Transport } from '@nestjs/microservices';
 import { IAMModule } from './modules/iam/iam.module';
 import { Swagger } from '@shared/index';
+import { JetstreamStrategy } from '@horizon-republic/nestjs-jetstream';
 
 async function bootstrap() {
   const app = await NestFactory.create(IAMModule, { bufferLogs: true });
-  app.enableCors({origin: 'http://localhost:5173'})
+
+  app.connectMicroservice(
+    { strategy: app.get(JetstreamStrategy) },
+    { inheritAppConfig: true },
+  )
+
+  app.enableCors({ origin: 'http://localhost:5173' })
   const logger = app.get<Logger>(Logger);
   app.useLogger(logger);
 

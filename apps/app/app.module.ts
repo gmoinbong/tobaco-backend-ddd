@@ -9,10 +9,11 @@ import { SharedModule } from '@shared/shared.module';
 import { loggerOptions } from '@shared/core/infrastructure/logger/logger.config';
 import { JetstreamModule } from '@horizon-republic/nestjs-jetstream';
 import { AuthGatewayController } from './gateway/auth.gateway.controller';
+import { NotificationsModule } from 'libs/notifications/src/notifications.module';
 import { UsersGatewayController } from './gateway/users.gateway.controller';
 
 @Module({
-  imports: [TobaccoModule, SharedModule,
+  imports: [TobaccoModule, SharedModule, NotificationsModule,
     JetstreamModule.forRoot({
       name: "gateway",
       servers: ['nats://localhost:4222'],
@@ -20,9 +21,6 @@ import { UsersGatewayController } from './gateway/users.gateway.controller';
     }),
     JetstreamModule.forFeature({
       name: "iam",
-    }),
-    JetstreamModule.forFeature({
-      name: "users"
     }),
     ConfigModule.forRoot({
       isGlobal: true,

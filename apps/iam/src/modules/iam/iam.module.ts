@@ -12,6 +12,7 @@ import { SharedModule } from '@shared/shared.module';
 import { CacheModule } from '@nestjs/cache-manager';
 import { JwtModule } from '@nestjs/jwt';
 import { JetstreamModule } from '@horizon-republic/nestjs-jetstream';
+import { NotificationsModule } from 'libs/notifications/src/notifications.module';
 
 @Module({
   controllers: [AuthNatsController, UserNatsController],
@@ -30,6 +31,7 @@ import { JetstreamModule } from '@horizon-republic/nestjs-jetstream';
     CacheModule.register({
       isGlobal: true,
     }),
+    NotificationsModule
   ],
   providers: [
     AuthService,

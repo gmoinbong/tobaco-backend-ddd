@@ -3,7 +3,7 @@ import * as bcrypt from "bcrypt";
 import { User } from "../domain/entities/user.entity";
 import type { IIAMRepository } from "../domain/repositories/iam.repository.interface";
 import { IAM_DI_TOKENS } from "../iam.tokens";
-import { BadRequestError, NotFoundError, UnauthorizedError } from "@shared/index";
+import { BadRequestError, ConflictError, NotFoundError, UnauthorizedError } from "@shared/index";
 import { CreateUserDto } from "../presentation/dto/create-user.dto";
 import { UpdateUserDto } from "../presentation/dto/update-user.dto";
 import { UserResponseDto } from "../presentation/dto/user-response.dto";
@@ -14,7 +14,7 @@ export class UserService {
   constructor(
     @Inject(IAM_DI_TOKENS.IAM_REPOSITORY)
     private readonly userRepository: IIAMRepository,
-  ) {}
+  ) { }
 
   private toResponseDto(user: User): UserResponseDto {
     return {
@@ -31,12 +31,20 @@ export class UserService {
   }
 
   async create(createUserDto: CreateUserDto): Promise<UserResponseDto> {
+    const existedUser = await this.userRepository.getUserByEmail(createUserDto.email)
+
+    if (existedUser) {
+      throw new ConflictError("User with this email already existed!")
+    }
+    
     const hashedPassword = await this.hashPassword(createUserDto.password);
+
     const user = User.create({
       email: createUserDto.email,
       username: createUserDto.username,
       password: hashedPassword,
     });
+
     const created = await this.userRepository.createUser(user);
     return this.toResponseDto(created);
   }

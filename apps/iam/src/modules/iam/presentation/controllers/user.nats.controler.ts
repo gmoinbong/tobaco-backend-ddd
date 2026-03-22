@@ -1,15 +1,22 @@
 import { MessagePattern, Payload } from "@nestjs/microservices";
 import { UserService } from "../../application/user.service";
 import { CreateUserDto, UpdateUserDto } from "../dto";
-import { Controller } from "@nestjs/common";
+import { Controller, UseFilters } from "@nestjs/common";
+import { SendOtpUseCase } from "libs/notifications/src/core/application/send-otp.use.case";
+import { DomainErrorRpcFilter } from "@shared/core/domain/mappers/domain-error.rpc-filter";
 
 @Controller()
+@UseFilters(DomainErrorRpcFilter)
 export class UserNatsController {
-    constructor(private readonly userService: UserService) { }
+    constructor(private readonly userService: UserService, private readonly sendOtpUseCase: SendOtpUseCase) { }
 
     @MessagePattern("users.create")
     async create(@Payload() createUserDto: CreateUserDto) {
-        return this.userService.create(createUserDto);
+        const user = await this.userService.create(createUserDto);
+        if (user) {
+            await this.sendOtpUseCase.execute(createUserDto.email);
+        }
+        return user;
     }
 
     @MessagePattern("users.getById")

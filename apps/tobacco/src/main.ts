@@ -3,6 +3,7 @@ import { Transport } from '@nestjs/microservices';
 import { Logger } from 'nestjs-pino';
 import { Swagger } from '@shared/core/presentation/docs';
 import { AppModule } from '../../app/app.module';
+import { DomainErrorRpcFilter } from '@shared/core/domain/mappers/domain-error.rpc-filter';
 
 async function bootstrap() {
   try {
@@ -13,6 +14,7 @@ async function bootstrap() {
     const logger = app.get<Logger>(Logger);
     app.useLogger(logger);
 
+    app.useGlobalFilters(new DomainErrorRpcFilter());
     app.setGlobalPrefix('api');
     Swagger.apply(app);
 

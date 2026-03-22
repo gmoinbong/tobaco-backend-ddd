@@ -6,32 +6,32 @@ import { firstValueFrom } from "rxjs";
 
 @Controller("users")
 export class UsersGatewayController {
-    constructor(@Inject("users") private readonly usersClient: ClientProxy
+    constructor(@Inject("iam") private readonly iamClient: ClientProxy
     ) { }
 
 
     @Post()
     @UserDocs.create()
     async create(@Body() createUserDto: CreateUserDto) {
-        return firstValueFrom(this.usersClient.send("users.create", createUserDto))
+        return firstValueFrom(this.iamClient.send("users.create", createUserDto))
     }
 
     @Get(":id")
     @UserDocs.getById()
     async getById(@Param("id") id: string) {
-        return firstValueFrom(this.usersClient.send("users.getById", id))
+        return firstValueFrom(this.iamClient.send("users.getById", id))
     }
 
     @Put(":id")
     @UserDocs.update()
     async update(@Param("id") id: string, @Body() updateUserDto: UpdateUserDto) {
-        return firstValueFrom(this.usersClient.send("users.update", updateUserDto))
+        return firstValueFrom(this.iamClient.send("users.update", updateUserDto))
     }
 
     @Delete(":id")
     @UserDocs.delete()
     async delete(@Param("id") id: string) {
-        return firstValueFrom(this.usersClient.send("users.delete", id))
+        return firstValueFrom(this.iamClient.send("users.delete", id))
     }
 
 }
